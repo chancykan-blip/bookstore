@@ -64,7 +64,7 @@ export default function ResourcePage() {
       {/* Nav */}
       <nav style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100, padding: '0 48px', height: '64px', display: 'flex', alignItems: 'center', gap: '16px', background: 'rgba(247,245,240,0.92)', backdropFilter: 'blur(16px)', borderBottom: '1px solid rgba(26,26,26,0.08)' }}>
         <Link href="/" style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.65rem', color: '#888', textDecoration: 'none', letterSpacing: '0.1em', textTransform: 'uppercase' }}>← 返回</Link>
-        <span style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '1.1rem', fontWeight: 400, color: '#1a1a1a' }}>资源书店</span>
+        <span style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '1.1rem', fontWeight: 400, color: '#1a1a1a' }}>Weekly</span>
       </nav>
 
       <div className={`page-enter${visible ? ' visible' : ''}`} style={{ maxWidth: '1100px', margin: '0 auto', padding: '96px 48px 80px' }}>
