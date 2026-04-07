@@ -2,18 +2,19 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
-import { useParams, useRouter } from 'next/navigation'
+import { useParams } from 'next/navigation'
 
 export default function ResourcePage() {
   const { id } = useParams()
-  const router = useRouter()
   const [resource, setResource] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [buying, setBuying] = useState(false)
+  const [visible, setVisible] = useState(false)
 
   useEffect(() => {
     supabase.from('resources').select('*').eq('id', id).single()
       .then(({ data }) => { setResource(data); setLoading(false) })
+    setTimeout(() => setVisible(true), 80)
   }, [id])
 
   const handleBuy = async () => {
@@ -29,41 +30,52 @@ export default function ResourcePage() {
   }
 
   if (loading) return (
-    <div style={{ minHeight: '100vh', background: '#0a0a0f', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(232,228,220,0.3)', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.72rem' }}>
-      Loading...
+    <div style={{ minHeight: '100vh', background: '#f7f5f0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <span style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.65rem', color: '#bbb', letterSpacing: '0.1em' }}>Loading...</span>
     </div>
   )
 
   if (!resource) return (
-    <div style={{ minHeight: '100vh', background: '#0a0a0f', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: '16px' }}>
-      <p style={{ color: '#e8e4dc', fontFamily: 'Cormorant Garamond, serif', fontSize: '1.5rem' }}>资源不存在</p>
-      <Link href="/" style={{ color: '#c8b8a2', fontSize: '0.82rem', fontFamily: 'JetBrains Mono, monospace' }}>← 返回首页</Link>
+    <div style={{ minHeight: '100vh', background: '#f7f5f0', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: '16px' }}>
+      <p style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '1.5rem', fontStyle: 'italic', color: '#1a1a1a' }}>资源不存在</p>
+      <Link href="/" style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.65rem', color: '#888', textDecoration: 'none', letterSpacing: '0.1em' }}>← 返回首页</Link>
     </div>
   )
 
   return (
-    <div style={{ minHeight: '100vh', background: '#0a0a0f', color: '#e8e4dc', fontFamily: "'Inter', sans-serif" }}>
+    <div style={{ minHeight: '100vh', background: '#f7f5f0', fontFamily: 'Cormorant Garamond, serif' }}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=Inter:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap');
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        .tag { font-family: 'JetBrains Mono', monospace; font-size: 0.58rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 8px; border: 1px solid rgba(255,255,255,0.1); color: rgba(232,228,220,0.4); border-radius: 2px; }
+        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=DM+Mono:wght@300;400;500&family=Instrument+Sans:wght@300;400;500&display=swap');
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: #f7f5f0; -webkit-font-smoothing: antialiased; }
+        .page-enter { opacity: 0; transform: translateY(16px); transition: all 0.7s cubic-bezier(0.16,1,0.3,1); }
+        .page-enter.visible { opacity: 1; transform: translateY(0); }
+        .tag { font-family: 'DM Mono', monospace; font-size: 0.55rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 8px; border: 1px solid rgba(26,26,26,0.12); color: #aaa; }
+        .buy-btn { width: 100%; background: #1a1a1a; color: #f7f5f0; border: none; padding: 16px; font-family: 'Instrument Sans', sans-serif; font-size: 0.85rem; font-weight: 500; letter-spacing: 0.05em; cursor: pointer; transition: opacity 0.2s; }
+        .buy-btn:hover { opacity: 0.85; }
+        .buy-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .free-btn { display: block; text-align: center; background: none; border: 1px solid #1a1a1a; color: #1a1a1a; padding: 15px; font-family: 'Instrument Sans', sans-serif; font-size: 0.85rem; font-weight: 400; letter-spacing: 0.05em; text-decoration: none; transition: all 0.2s; }
+        .free-btn:hover { background: #1a1a1a; color: #f7f5f0; }
+        .info-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid rgba(26,26,26,0.07); }
+        .info-label { font-family: 'DM Mono', monospace; font-size: 0.65rem; color: #aaa; letter-spacing: 0.05em; }
+        .info-value { font-family: 'DM Mono', monospace; font-size: 0.65rem; color: #1a1a1a; letter-spacing: 0.05em; }
       `}</style>
 
-      <nav style={{ position: 'sticky', top: 0, zIndex: 100, borderBottom: '1px solid rgba(255,255,255,0.07)', background: 'rgba(10,10,15,0.9)', backdropFilter: 'blur(20px)', padding: '0 2rem' }}>
-        <div style={{ maxWidth: '1200px', margin: '0 auto', height: '60px', display: 'flex', alignItems: 'center', gap: '16px' }}>
-          <Link href="/" style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.68rem', color: 'rgba(232,228,220,0.4)', textDecoration: 'none' }}>← 返回</Link>
-          <span style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '1.1rem', fontWeight: 400 }}>资源书店</span>
-        </div>
+      {/* Nav */}
+      <nav style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100, padding: '0 48px', height: '64px', display: 'flex', alignItems: 'center', gap: '16px', background: 'rgba(247,245,240,0.92)', backdropFilter: 'blur(16px)', borderBottom: '1px solid rgba(26,26,26,0.08)' }}>
+        <Link href="/" style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.65rem', color: '#888', textDecoration: 'none', letterSpacing: '0.1em', textTransform: 'uppercase' }}>← 返回</Link>
+        <span style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '1.1rem', fontWeight: 400, color: '#1a1a1a' }}>资源书店</span>
       </nav>
 
-      <div style={{ maxWidth: '1000px', margin: '0 auto', padding: '60px 2rem' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.5fr', gap: '60px', alignItems: 'start' }}>
+      <div className={`page-enter${visible ? ' visible' : ''}`} style={{ maxWidth: '1100px', margin: '0 auto', padding: '96px 48px 80px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: '80px', alignItems: 'start' }}>
+
           {/* Cover */}
-          <div>
-            <div style={{ background: '#1a1a24', border: '1px solid rgba(255,255,255,0.07)', aspectRatio: '3/4', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+          <div style={{ position: 'sticky', top: '96px' }}>
+            <div style={{ background: '#ede9e2', aspectRatio: '3/4', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               {resource.cover_url
                 ? <img src={resource.cover_url} alt={resource.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                : <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.6rem', color: 'rgba(255,255,255,0.15)', letterSpacing: '0.1em' }}>NO COVER</span>
+                : <span style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.6rem', color: 'rgba(26,26,26,0.2)', letterSpacing: '0.1em' }}>NO COVER</span>
               }
             </div>
           </div>
@@ -74,50 +86,63 @@ export default function ResourcePage() {
               <span className="tag">{resource.category}</span>
               {resource.tags?.map((t: string) => <span key={t} className="tag">{t}</span>)}
             </div>
-            <h1 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 'clamp(1.8rem, 3vw, 2.5rem)', fontWeight: 300, letterSpacing: '-0.02em', lineHeight: 1.1, marginBottom: '20px' }}>
+
+            <h1 style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 'clamp(2rem, 4vw, 3rem)', fontWeight: 300, letterSpacing: '-0.03em', lineHeight: 1.05, color: '#1a1a1a', marginBottom: '24px' }}>
               {resource.title}
             </h1>
-            <p style={{ fontSize: '0.88rem', color: 'rgba(232,228,220,0.55)', lineHeight: 1.85, marginBottom: '40px' }}>
+
+            <p style={{ fontFamily: 'Instrument Sans, sans-serif', fontSize: '0.9rem', fontWeight: 300, color: '#555', lineHeight: 1.85, marginBottom: '40px' }}>
               {resource.description}
             </p>
 
-            <div style={{ borderTop: '1px solid rgba(255,255,255,0.07)', borderBottom: '1px solid rgba(255,255,255,0.07)', padding: '20px 0', marginBottom: '32px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                <span style={{ fontSize: '0.78rem', color: 'rgba(232,228,220,0.4)' }}>格式</span>
-                <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.72rem', color: '#e8e4dc' }}>{resource.file_name?.split('.').pop()?.toUpperCase() || 'FILE'}</span>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                <span style={{ fontSize: '0.78rem', color: 'rgba(232,228,220,0.4)' }}>下载次数</span>
-                <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.72rem', color: '#e8e4dc' }}>最多 3 次</span>
+            {/* Info rows */}
+            <div style={{ marginBottom: '32px' }}>
+              <div className="info-row">
+                <span className="info-label">格式</span>
+                <span className="info-value">{resource.file_name?.split('.').pop()?.toUpperCase() || 'FILE'}</span>
               </div>
               {resource.file_size && (
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span style={{ fontSize: '0.78rem', color: 'rgba(232,228,220,0.4)' }}>文件大小</span>
-                  <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.72rem', color: '#e8e4dc' }}>{resource.file_size}</span>
+                <div className="info-row">
+                  <span className="info-label">文件大小</span>
+                  <span className="info-value">{resource.file_size}</span>
                 </div>
+              )}
+              <div className="info-row">
+                <span className="info-label">下载次数</span>
+                <span className="info-value">最多 3 次</span>
+              </div>
+              <div className="info-row">
+                <span className="info-label">有效期</span>
+                <span className="info-value">永久有效</span>
+              </div>
+            </div>
+
+            {/* Price + CTA */}
+            <div style={{ marginBottom: '16px' }}>
+              <div style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '2.2rem', fontWeight: 400, color: '#1a1a1a', marginBottom: '16px', letterSpacing: '-0.02em' }}>
+                {resource.price === 0 ? 'Free' : `${resource.currency?.toUpperCase()} ${Number(resource.price).toFixed(2)}`}
+              </div>
+              {resource.price === 0 ? (
+                <Link href="/redeem" className="free-btn">免费获取 →</Link>
+              ) : (
+                <button className="buy-btn" onClick={handleBuy} disabled={buying}>
+                  {buying ? '跳转支付中...' : '立即购买 →'}
+                </button>
               )}
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '24px' }}>
-              <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '1.6rem', fontWeight: 500, color: '#c8b8a2' }}>
-                {resource.price === 0 ? 'FREE' : `${resource.currency?.toUpperCase() || 'USD'} ${resource.price}`}
-              </span>
-            </div>
-
-            {resource.price === 0 ? (
-              <Link href="/redeem" style={{ display: 'block', textAlign: 'center', background: '#e8e4dc', color: '#0a0a0f', padding: '14px', fontFamily: 'Inter, sans-serif', fontSize: '0.82rem', fontWeight: 500, letterSpacing: '0.05em', textDecoration: 'none' }}>
-                免费获取 →
-              </Link>
-            ) : (
-              <button onClick={handleBuy} disabled={buying}
-                style={{ width: '100%', background: '#e8e4dc', color: '#0a0a0f', padding: '14px', fontFamily: 'Inter, sans-serif', fontSize: '0.82rem', fontWeight: 500, letterSpacing: '0.05em', border: 'none', cursor: buying ? 'not-allowed' : 'pointer', opacity: buying ? 0.7 : 1 }}>
-                {buying ? '跳转支付中...' : '立即购买 →'}
-              </button>
-            )}
-
-            <p style={{ textAlign: 'center', marginTop: '16px', fontSize: '0.72rem', color: 'rgba(232,228,220,0.3)', fontFamily: 'JetBrains Mono, monospace' }}>
-              已有授权码？<Link href="/redeem" style={{ color: '#c8b8a2', textDecoration: 'none' }}>直接兑换 →</Link>
+            <p style={{ textAlign: 'center', fontFamily: 'DM Mono, monospace', fontSize: '0.62rem', color: '#bbb', letterSpacing: '0.05em' }}>
+              已有授权码？<Link href="/redeem" style={{ color: '#888', textDecoration: 'none' }}> 直接兑换 →</Link>
             </p>
+
+            {/* Trust badges */}
+            <div style={{ display: 'flex', gap: '24px', marginTop: '32px', paddingTop: '24px', borderTop: '1px solid rgba(26,26,26,0.07)' }}>
+              {['安全支付', '即时授权', '永久有效'].map(b => (
+                <div key={b} style={{ textAlign: 'center' }}>
+                  <div style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.6rem', color: '#aaa', letterSpacing: '0.08em', textTransform: 'uppercase' }}>{b}</div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>

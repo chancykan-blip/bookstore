@@ -19,10 +19,12 @@ export default function StorePage() {
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [category, setCategory] = useState('all')
+  const [visible, setVisible] = useState(false)
 
   useEffect(() => {
     supabase.from('resources').select('*').eq('active', true).order('created_at', { ascending: false })
       .then(({ data }) => { if (data) setResources(data); setLoading(false) })
+    setTimeout(() => setVisible(true), 80)
   }, [])
 
   const categories = ['all', ...Array.from(new Set(resources.map(r => r.category)))]
@@ -33,124 +35,216 @@ export default function StorePage() {
   })
 
   return (
-    <div style={{ minHeight: '100vh', background: '#0a0a0f', color: '#e8e4dc', fontFamily: "'Inter', sans-serif" }}>
+    <div style={{ minHeight: '100vh', background: '#f7f5f0', color: '#1a1a1a', fontFamily: "'Editorial New', 'Cormorant Garamond', Georgia, serif" }}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=Inter:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap');
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        .card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); transition: all 0.3s ease; text-decoration: none; color: inherit; display: block; }
-        .card:hover { border-color: rgba(255,255,255,0.2); transform: translateY(-4px); box-shadow: 0 12px 40px rgba(0,0,0,0.3); }
-        .tag { font-family: 'JetBrains Mono', monospace; font-size: 0.58rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 8px; border: 1px solid rgba(255,255,255,0.1); color: rgba(232,228,220,0.4); border-radius: 2px; }
-        input, select { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); color: #e8e4dc; padding: 10px 16px; font-family: 'Inter', sans-serif; font-size: 0.85rem; outline: none; }
-        input:focus, select:focus { border-color: rgba(255,255,255,0.3); }
-        .btn { font-family: 'Inter', sans-serif; font-size: 0.78rem; font-weight: 500; padding: 10px 24px; cursor: pointer; letter-spacing: 0.05em; border: none; transition: opacity 0.2s; }
-        .cat-btn { background: none; border: 1px solid rgba(255,255,255,0.1); color: rgba(232,228,220,0.5); padding: 6px 16px; font-size: 0.72rem; cursor: pointer; font-family: 'JetBrains Mono', monospace; letter-spacing: 0.1em; text-transform: uppercase; transition: all 0.2s; }
-        .cat-btn.active { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.3); color: #e8e4dc; }
-        .cover-placeholder { width: 100%; height: 200px; display: flex; align-items: center; justify-content: center; font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; color: rgba(255,255,255,0.15); letter-spacing: 0.1em; }
+        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=DM+Mono:wght@300;400;500&family=Instrument+Sans:wght@300;400;500&display=swap');
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
+        body { background: #f7f5f0; -webkit-font-smoothing: antialiased; }
+
+        .page-enter { opacity: 0; transform: translateY(20px); transition: all 0.8s cubic-bezier(0.16,1,0.3,1); }
+        .page-enter.visible { opacity: 1; transform: translateY(0); }
+
+        /* Nav */
+        .nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; padding: 0 48px; height: 64px; display: flex; align-items: center; justify-content: space-between; transition: all 0.3s ease; }
+        .nav.scrolled { background: rgba(247,245,240,0.92); backdrop-filter: blur(16px); border-bottom: 1px solid rgba(26,26,26,0.08); }
+        .nav-logo { font-family: 'Cormorant Garamond', serif; font-size: 1.2rem; font-weight: 500; color: #1a1a1a; letter-spacing: -0.02em; text-decoration: none; cursor: pointer; background: none; border: none; }
+        .nav-links { display: flex; gap: 32px; align-items: center; }
+        .nav-link { font-family: 'DM Mono', monospace; font-size: 0.65rem; letter-spacing: 0.12em; text-transform: uppercase; color: #888; text-decoration: none; transition: color 0.2s; }
+        .nav-link:hover { color: #1a1a1a; }
+        .nav-cta { font-family: 'DM Mono', monospace; font-size: 0.65rem; letter-spacing: 0.1em; text-transform: uppercase; color: #f7f5f0; background: #1a1a1a; padding: 8px 20px; text-decoration: none; transition: opacity 0.2s; }
+        .nav-cta:hover { opacity: 0.8; }
+
+        /* Hero */
+        .hero { padding: 140px 48px 80px; max-width: 1300px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: end; }
+        .hero-eyebrow { font-family: 'DM Mono', monospace; font-size: 0.62rem; letter-spacing: 0.2em; text-transform: uppercase; color: #888; margin-bottom: 20px; display: flex; align-items: center; gap: 12px; }
+        .hero-eyebrow::before { content: ''; width: 24px; height: 1px; background: #888; }
+        .hero-title { font-family: 'Cormorant Garamond', serif; font-size: clamp(3rem, 6vw, 5.5rem); font-weight: 300; line-height: 1.0; letter-spacing: -0.04em; color: #1a1a1a; }
+        .hero-title em { font-style: italic; color: #888; }
+        .hero-right { padding-bottom: 8px; }
+        .hero-desc { font-family: 'Instrument Sans', sans-serif; font-size: 0.95rem; font-weight: 300; color: #555; line-height: 1.85; max-width: 380px; margin-bottom: 32px; }
+        .hero-stats { display: flex; gap: 32px; padding-top: 24px; border-top: 1px solid rgba(26,26,26,0.1); }
+        .stat-num { font-family: 'Cormorant Garamond', serif; font-size: 2rem; font-weight: 400; color: #1a1a1a; line-height: 1; }
+        .stat-label { font-family: 'DM Mono', monospace; font-size: 0.58rem; color: #aaa; letter-spacing: 0.1em; text-transform: uppercase; margin-top: 4px; }
+
+        /* Marquee */
+        .marquee-wrap { overflow: hidden; border-top: 1px solid rgba(26,26,26,0.1); border-bottom: 1px solid rgba(26,26,26,0.1); padding: 14px 0; background: #1a1a1a; }
+        .marquee-inner { display: flex; width: max-content; animation: marquee 30s linear infinite; }
+        .marquee-item { font-family: 'Cormorant Garamond', serif; font-size: 1rem; font-style: italic; color: rgba(247,245,240,0.5); white-space: nowrap; padding: 0 32px; }
+        .marquee-dot { color: #c8b8a2; font-style: normal; }
+        @keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+        /* Filters */
+        .filters { max-width: 1300px; margin: 0 auto; padding: 40px 48px 24px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+        .search-input { font-family: 'DM Mono', monospace; font-size: 0.75rem; background: white; border: 1px solid rgba(26,26,26,0.12); color: #1a1a1a; padding: 10px 16px; outline: none; width: 220px; letter-spacing: 0.02em; transition: border-color 0.2s; }
+        .search-input:focus { border-color: #1a1a1a; }
+        .search-input::placeholder { color: #bbb; }
+        .cat-btn { font-family: 'DM Mono', monospace; font-size: 0.6rem; letter-spacing: 0.12em; text-transform: uppercase; background: none; border: 1px solid rgba(26,26,26,0.12); color: #888; padding: 8px 16px; cursor: pointer; transition: all 0.2s; }
+        .cat-btn:hover { border-color: #1a1a1a; color: #1a1a1a; }
+        .cat-btn.active { background: #1a1a1a; border-color: #1a1a1a; color: #f7f5f0; }
+        .count { font-family: 'DM Mono', monospace; font-size: 0.62rem; color: #bbb; margin-left: auto; letter-spacing: 0.05em; }
+
+        /* Grid */
+        .grid-wrap { max-width: 1300px; margin: 0 auto; padding: 8px 48px 80px; display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 2px; }
+
+        /* Card */
+        .card { background: white; text-decoration: none; color: inherit; display: block; position: relative; overflow: hidden; transition: transform 0.3s ease; }
+        .card:hover { transform: translateY(-4px); }
+        .card:hover .card-arrow { opacity: 1; transform: translate(0, 0); }
+        .card:hover .cover-img { transform: scale(1.03); }
+        .cover-wrap { height: 240px; overflow: hidden; background: #ede9e2; position: relative; }
+        .cover-img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s ease; }
+        .cover-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
+        .cover-placeholder span { font-family: 'DM Mono', monospace; font-size: 0.55rem; color: rgba(26,26,26,0.2); letter-spacing: 0.15em; text-transform: uppercase; }
+        .card-body { padding: 20px 24px 24px; }
+        .card-cat { font-family: 'DM Mono', monospace; font-size: 0.58rem; letter-spacing: 0.1em; text-transform: uppercase; color: #aaa; margin-bottom: 8px; }
+        .card-title { font-family: 'Cormorant Garamond', serif; font-size: 1.25rem; font-weight: 400; color: #1a1a1a; line-height: 1.2; margin-bottom: 8px; letter-spacing: -0.01em; }
+        .card-desc { font-family: 'Instrument Sans', sans-serif; font-size: 0.78rem; color: #888; line-height: 1.65; margin-bottom: 16px; font-weight: 300; }
+        .card-footer { display: flex; justify-content: space-between; align-items: center; padding-top: 14px; border-top: 1px solid rgba(26,26,26,0.07); }
+        .card-price { font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; font-weight: 500; color: #1a1a1a; }
+        .card-arrow { font-family: 'DM Mono', monospace; font-size: 0.62rem; color: #1a1a1a; opacity: 0; transform: translate(-4px, 4px); transition: all 0.2s ease; letter-spacing: 0.05em; }
+        .tag { font-family: 'DM Mono', monospace; font-size: 0.55rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 2px 7px; border: 1px solid rgba(26,26,26,0.1); color: #aaa; }
+
+        /* Empty state */
+        .empty { text-align: center; padding: 100px 48px; }
+        .empty-title { font-family: 'Cormorant Garamond', serif; font-size: 2rem; font-weight: 300; color: #1a1a1a; margin-bottom: 8px; font-style: italic; }
+        .empty-sub { font-family: 'DM Mono', monospace; font-size: 0.65rem; color: #bbb; letter-spacing: 0.1em; }
+
+        /* Footer */
+        footer { border-top: 1px solid rgba(26,26,26,0.08); padding: 24px 48px; background: #1a1a1a; }
+        .footer-inner { max-width: 1300px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
+        .footer-copy { font-family: 'DM Mono', monospace; font-size: 0.6rem; color: rgba(247,245,240,0.3); letter-spacing: 0.05em; }
+        .footer-link { font-family: 'DM Mono', monospace; font-size: 0.6rem; color: rgba(247,245,240,0.4); text-decoration: none; letter-spacing: 0.05em; transition: color 0.2s; }
+        .footer-link:hover { color: rgba(247,245,240,0.8); }
+
+        @media (max-width: 900px) {
+          .hero { grid-template-columns: 1fr; gap: 40px; padding: 120px 24px 60px; }
+          .nav { padding: 0 24px; }
+          .filters { padding: 32px 24px 16px; }
+          .grid-wrap { padding: 8px 24px 60px; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
+          footer { padding: 20px 24px; }
+        }
       `}</style>
 
       {/* Nav */}
-      <nav style={{ position: 'sticky', top: 0, zIndex: 100, borderBottom: '1px solid rgba(255,255,255,0.07)', background: 'rgba(10,10,15,0.9)', backdropFilter: 'blur(20px)', padding: '0 2rem' }}>
-        <div style={{ maxWidth: '1200px', margin: '0 auto', height: '60px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <span style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '1.2rem', fontWeight: 400, letterSpacing: '-0.02em' }}>
-            资源书店
-          </span>
-          <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-            <Link href="/redeem" style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.68rem', color: '#c8b8a2', textDecoration: 'none', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
-              兑换授权码 →
-            </Link>
-          </div>
-        </div>
-      </nav>
+      <NavBar />
 
       {/* Hero */}
-      <div style={{ borderBottom: '1px solid rgba(255,255,255,0.07)', padding: '60px 2rem' }}>
-        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-          <p style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.62rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: '#7c9e8f', marginBottom: '16px' }}>Digital Resources</p>
-          <h1 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 'clamp(2.5rem, 5vw, 4rem)', fontWeight: 300, letterSpacing: '-0.03em', lineHeight: 1.05, marginBottom: '20px' }}>
-            精选电子资源<br /><em style={{ color: 'rgba(200,184,162,0.6)' }}>即买即用</em>
-          </h1>
-          <p style={{ fontSize: '0.9rem', color: 'rgba(232,228,220,0.5)', maxWidth: '480px', lineHeight: 1.8 }}>
-            购买后自动生成授权码，输入授权码即可下载。安全、快速、无需注册。
-          </p>
+      <div className={`page-enter${visible ? ' visible' : ''}`}>
+        <div className="hero">
+          <div>
+            <div className="hero-eyebrow">Digital Resources</div>
+            <h1 className="hero-title">
+              精选<br />
+              数字资源<br />
+              <em>即买即用</em>
+            </h1>
+          </div>
+          <div className="hero-right">
+            <p className="hero-desc">
+              购买后立即获得授权码，输入授权码即可下载。无需注册账号，安全快速，支持多次下载。
+            </p>
+            <div className="hero-stats">
+              <div>
+                <div className="stat-num">{resources.length}</div>
+                <div className="stat-label">资源</div>
+              </div>
+              <div>
+                <div className="stat-num">3×</div>
+                <div className="stat-label">下载次数</div>
+              </div>
+              <div>
+                <div className="stat-num">即时</div>
+                <div className="stat-label">授权</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Marquee */}
+      <div className="marquee-wrap">
+        <div className="marquee-inner">
+          {['电子书', 'E-Book', '课程资料', 'Templates', '设计资源', 'Digital Downloads', '即买即用', 'Instant Access', '电子书', 'E-Book', '课程资料', 'Templates', '设计资源', 'Digital Downloads', '即买即用', 'Instant Access'].map((item, i) => (
+            <span key={i} className="marquee-item">{item} <span className="marquee-dot">·</span></span>
+          ))}
         </div>
       </div>
 
       {/* Filters */}
-      <div style={{ padding: '24px 2rem', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-        <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'center' }}>
-          <input
-            value={search} onChange={e => setSearch(e.target.value)}
-            placeholder="搜索资源..." style={{ width: '240px' }}
-          />
-          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-            {categories.map(cat => (
-              <button key={cat} className={`cat-btn${category === cat ? ' active' : ''}`} onClick={() => setCategory(cat)}>
-                {cat === 'all' ? '全部' : cat}
-              </button>
-            ))}
-          </div>
-          <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.62rem', color: 'rgba(232,228,220,0.25)', marginLeft: 'auto' }}>
-            {filtered.length} 个资源
-          </span>
+      <div className="filters">
+        <input className="search-input" value={search} onChange={e => setSearch(e.target.value)} placeholder="搜索资源..." />
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+          {categories.map(cat => (
+            <button key={cat} className={`cat-btn${category === cat ? ' active' : ''}`} onClick={() => setCategory(cat)}>
+              {cat === 'all' ? '全部' : cat}
+            </button>
+          ))}
         </div>
+        <span className="count">{filtered.length} 个资源</span>
       </div>
 
       {/* Grid */}
-      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 2rem' }}>
-        {loading ? (
-          <div style={{ textAlign: 'center', padding: '80px', color: 'rgba(232,228,220,0.3)', fontFamily: "'JetBrains Mono', monospace", fontSize: '0.72rem' }}>
-            Loading...
-          </div>
-        ) : filtered.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '80px', color: 'rgba(232,228,220,0.3)' }}>
-            <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '1.5rem', fontWeight: 300, marginBottom: '8px' }}>暂无资源</p>
-            <p style={{ fontSize: '0.82rem' }}>请稍后再来</p>
-          </div>
-        ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px' }}>
-            {filtered.map(r => (
-              <Link key={r.id} href={`/resource/${r.id}`} className="card">
-                <div style={{ background: '#1a1a24' }} className="cover-placeholder">
-                  {r.cover_url
-                    ? <img src={r.cover_url} alt={r.title} style={{ width: '100%', height: '200px', objectFit: 'cover' }} />
-                    : <span>NO COVER</span>
-                  }
+      {loading ? (
+        <div className="empty"><p className="empty-sub">Loading...</p></div>
+      ) : filtered.length === 0 ? (
+        <div className="empty">
+          <p className="empty-title">暂无资源</p>
+          <p className="empty-sub">请稍后再来</p>
+        </div>
+      ) : (
+        <div className="grid-wrap">
+          {filtered.map((r, i) => (
+            <Link key={r.id} href={`/resource/${r.id}`} className="card" style={{ animationDelay: `${i * 0.05}s` }}>
+              <div className="cover-wrap">
+                {r.cover_url
+                  ? <img src={r.cover_url} alt={r.title} className="cover-img" />
+                  : <div className="cover-placeholder"><span>No Cover</span></div>
+                }
+              </div>
+              <div className="card-body">
+                <div className="card-cat">{r.category}</div>
+                <h3 className="card-title">{r.title}</h3>
+                <p className="card-desc">{r.description?.slice(0, 72)}{r.description?.length > 72 ? '...' : ''}</p>
+                <div style={{ display: 'flex', gap: '4px', marginBottom: '12px', flexWrap: 'wrap' }}>
+                  {r.tags?.slice(0, 3).map(t => <span key={t} className="tag">{t}</span>)}
                 </div>
-                <div style={{ padding: '20px' }}>
-                  <div style={{ display: 'flex', gap: '6px', marginBottom: '10px', flexWrap: 'wrap' }}>
-                    <span className="tag">{r.category}</span>
-                    {r.tags?.slice(0, 2).map(t => <span key={t} className="tag">{t}</span>)}
-                  </div>
-                  <h3 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '1.15rem', fontWeight: 400, marginBottom: '8px', lineHeight: 1.3 }}>{r.title}</h3>
-                  <p style={{ fontSize: '0.78rem', color: 'rgba(232,228,220,0.45)', lineHeight: 1.6, marginBottom: '16px' }}>
-                    {r.description?.slice(0, 80)}{r.description?.length > 80 ? '...' : ''}
-                  </p>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '1rem', fontWeight: 500, color: '#c8b8a2' }}>
-                      {r.price === 0 ? 'FREE' : `${r.currency?.toUpperCase() || 'USD'} ${r.price}`}
-                    </span>
-                    <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.62rem', color: 'rgba(232,228,220,0.3)', letterSpacing: '0.05em' }}>
-                      查看详情 →
-                    </span>
-                  </div>
+                <div className="card-footer">
+                  <span className="card-price">
+                    {r.price === 0 ? 'Free' : `${r.currency?.toUpperCase()} ${Number(r.price).toFixed(2)}`}
+                  </span>
+                  <span className="card-arrow">查看 →</span>
                 </div>
-              </Link>
-            ))}
-          </div>
-        )}
-      </div>
+              </div>
+            </Link>
+          ))}
+        </div>
+      )}
 
-      {/* Footer */}
-      <footer style={{ borderTop: '1px solid rgba(255,255,255,0.07)', padding: '24px 2rem', marginTop: '40px' }}>
-        <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.62rem', color: 'rgba(232,228,220,0.2)' }}>
-            © 2026 资源书店
-          </span>
-          <Link href="/redeem" style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.62rem', color: 'rgba(232,228,220,0.3)', textDecoration: 'none' }}>
-            已购买？兑换授权码 →
-          </Link>
+      <footer>
+        <div className="footer-inner">
+          <span className="footer-copy">© 2026 资源书店</span>
+          <Link href="/redeem" className="footer-link">已购买？兑换授权码 →</Link>
         </div>
       </footer>
     </div>
+  )
+}
+
+function NavBar() {
+  const [scrolled, setScrolled] = useState(false)
+  useEffect(() => {
+    const fn = () => setScrolled(window.scrollY > 40)
+    window.addEventListener('scroll', fn)
+    return () => window.removeEventListener('scroll', fn)
+  }, [])
+  return (
+    <nav className={`nav${scrolled ? ' scrolled' : ''}`}>
+      <Link href="/" className="nav-logo">资源书店</Link>
+      <div className="nav-links">
+        <Link href="/" className="nav-link">首页</Link>
+        <Link href="/redeem" className="nav-cta">兑换授权码</Link>
+      </div>
+    </nav>
   )
 }
